@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"html/template"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -105,9 +106,24 @@ func writeConfig(tpl *template.Template) error {
 	}
 	defer cfg.Close()
 
+	hosts, err := getConfig(cfg)
+	if err != nil {
+		return err
+	}
+
+	fp, err := os.Create(outPath)
+	if err != nil {
+		return err
+	}
+	defer fp.Close()
+
+	return tpl.Execute(fp, hosts)
+}
+
+func getConfig(in io.Reader) ([]SiteConfig, error) {
 	hosts := make([]SiteConfig, 0)
 
-	scanner := bufio.NewScanner(os.Stdin)
+	scanner := bufio.NewScanner(in)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
 		if line == "" {
@@ -123,14 +139,12 @@ func writeConfig(tpl *template.Template) error {
 			})
 		}
 	}
-
-	fp, err := os.Create(outPath)
+	err := scanner.Err()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	defer fp.Close()
 
-	return tpl.Execute(fp, hosts)
+	return hosts, nil
 }
 
 func process(tpl *template.Template, cmd *exec.Cmd) error {
