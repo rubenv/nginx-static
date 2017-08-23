@@ -1,16 +1,17 @@
 package main
 
 import (
-	"bufio"
 	"html/template"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
+
+	yaml "gopkg.in/yaml.v1"
 
 	"github.com/fsnotify/fsnotify"
 )
@@ -95,8 +96,9 @@ func do() error {
 }
 
 type SiteConfig struct {
-	Hostname string
-	Path     string
+	Host     string `yaml:"host"`
+	Root     string `yaml:"root"`
+	Redirect string `yaml:"redirect"`
 }
 
 func writeConfig(tpl *template.Template) error {
@@ -123,23 +125,12 @@ func writeConfig(tpl *template.Template) error {
 func getConfig(in io.Reader) ([]SiteConfig, error) {
 	hosts := make([]SiteConfig, 0)
 
-	scanner := bufio.NewScanner(in)
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-		if line == "" {
-			continue
-		}
-
-		parts := strings.SplitN(line, ":", 2)
-
-		if len(parts) == 2 {
-			hosts = append(hosts, SiteConfig{
-				Hostname: strings.TrimSpace(parts[0]),
-				Path:     strings.TrimSpace(parts[1]),
-			})
-		}
+	b, err := ioutil.ReadAll(in)
+	if err != nil {
+		return nil, err
 	}
-	err := scanner.Err()
+
+	err = yaml.Unmarshal(b, &hosts)
 	if err != nil {
 		return nil, err
 	}

@@ -33,8 +33,9 @@ http {
 {{ range . }}
     server {
         listen 80;
-        server_name {{ .Hostname }};
-        root {{ .Path }}
+        server_name {{ .Host }};
+        {{ if ne .Root "" }}
+        root {{ .Root }}
         index index.htm index.html;
 
         location ~* \.(?:ico|css|js|gif|jpe?g|png)$ {
@@ -45,6 +46,12 @@ http {
         location = /service-worker.js {
             expires -1;
         }
+        {{ end }}
+        {{ if ne .Redirect "" }}
+        location / {
+            rewrite ^(.*)$ https://{{ .Redirect }}$1 permanent;
+        }
+        {{ end }}
     }
 {{ end }}
 }
