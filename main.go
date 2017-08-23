@@ -153,6 +153,6 @@ func process(tpl *template.Template, cmd *exec.Cmd) error {
 		return err
 	}
 
-	// Trigger reload of pgbouncer config
+	// Trigger reload of config
 	return cmd.Process.Signal(syscall.SIGHUP)
 }
