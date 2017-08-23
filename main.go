@@ -36,7 +36,7 @@ func do() error {
 	}
 
 	// Start nginx
-	cmd := exec.Command("/usr/bin/nginx", "-g", "daemon off;")
+	cmd := exec.Command("/usr/sbin/nginx", "-g", "daemon off;")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Start()
