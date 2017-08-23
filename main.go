@@ -17,6 +17,7 @@ import (
 const (
 	cfgPath = "/etc/nginx-static/config"
 	tplPath = "/etc/nginx/nginx.conf.tpl"
+	outPath = "/etc/nginx/nginx.conf"
 )
 
 var tpl = template.Must(template.ParseFiles(tplPath))
@@ -120,7 +121,7 @@ func writeConfig() error {
 		}
 	}
 
-	fp, err := os.Create(cfgPath)
+	fp, err := os.Create(outPath)
 	if err != nil {
 		return err
 	}
