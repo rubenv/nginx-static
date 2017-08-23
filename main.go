@@ -63,18 +63,13 @@ func do() error {
 	go func() {
 		for {
 			select {
-			case event := <-watcher.Events:
-				log.Println("event:", event)
-				if event.Op&fsnotify.Write == fsnotify.Write {
-					log.Println("modified file:", event.Name)
-					err := process(tpl, cmd)
-					if err != nil {
-						log.Printf("Failed to process config: %s", err)
-					}
+			case <-watcher.Events:
+				err := process(tpl, cmd)
+				if err != nil {
+					log.Printf("Failed to process config: %s", err)
 				}
 			case err := <-watcher.Errors:
 				log.Printf("Config watch error: %s", err)
-
 			case <-stop:
 				// Wait for a while
 				time.Sleep(30 * time.Second)
