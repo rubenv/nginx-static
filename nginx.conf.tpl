@@ -35,7 +35,7 @@ http {
         listen 80;
         server_name {{ .Host }};
         {{ if ne .Root "" }}
-        root {{ .Root }}
+        root {{ .Root }};
         index index.htm index.html;
 
         location ~* \.(?:ico|css|js|gif|jpe?g|png)$ {
