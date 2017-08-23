@@ -20,8 +20,6 @@ const (
 	outPath = "/etc/nginx/nginx.conf"
 )
 
-var tpl = template.Must(template.ParseFiles(tplPath))
-
 func main() {
 	err := do()
 	if err != nil {
@@ -30,8 +28,13 @@ func main() {
 }
 
 func do() error {
+	tpl, err := template.ParseFiles(tplPath)
+	if err != nil {
+		return err
+	}
+
 	// Write initial config
-	err := writeConfig()
+	err = writeConfig(tpl)
 	if err != nil {
 		return err
 	}
@@ -62,7 +65,7 @@ func do() error {
 				log.Println("event:", event)
 				if event.Op&fsnotify.Write == fsnotify.Write {
 					log.Println("modified file:", event.Name)
-					err := process(cmd)
+					err := process(tpl, cmd)
 					if err != nil {
 						log.Printf("Failed to process config: %s", err)
 					}
@@ -95,7 +98,7 @@ type SiteConfig struct {
 	Path     string
 }
 
-func writeConfig() error {
+func writeConfig(tpl *template.Template) error {
 	cfg, err := os.Open(cfgPath)
 	if err != nil {
 		return err
@@ -130,8 +133,8 @@ func writeConfig() error {
 	return tpl.Execute(fp, hosts)
 }
 
-func process(cmd *exec.Cmd) error {
-	err := writeConfig()
+func process(tpl *template.Template, cmd *exec.Cmd) error {
+	err := writeConfig(tpl)
 	if err != nil {
 		return err
 	}
