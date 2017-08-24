@@ -47,6 +47,7 @@ http {
             expires -1;
         }
         {{ end }}
+        {{ .Extra }}
         {{ if ne .Redirect "" }}
         location / {
             rewrite ^(.*)$ https://{{ .Redirect }}$1 permanent;

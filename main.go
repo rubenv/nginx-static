@@ -106,6 +106,7 @@ type SiteConfig struct {
 	Host     string `yaml:"host"`
 	Root     string `yaml:"root"`
 	Redirect string `yaml:"redirect"`
+	Extra    string `yaml:"extra"`
 }
 
 func writeConfig(tpl *template.Template) error {
