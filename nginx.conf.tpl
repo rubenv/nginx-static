@@ -26,7 +26,7 @@ http {
 
     gzip             on;
     gzip_min_length  1000;
-    gzip_types       text/html text/plain application/xml text/css application/javascript application/json application/x-javascript text/javascript;
+    gzip_types       text/plain application/xml text/css application/javascript application/json application/x-javascript text/javascript;
     gzip_disable     "MSIE [1-6]\.";
     gzip_static      on;
 
