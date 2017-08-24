@@ -54,40 +54,52 @@ func do() error {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM)
 
-	// Config watcher
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		return err
-	}
-
 	go func() {
 		for {
-			select {
-			case <-watcher.Events:
-				err := process(tpl, cmd)
-				if err != nil {
-					log.Printf("Failed to process config: %s", err)
-				}
-			case err := <-watcher.Errors:
-				log.Printf("Config watch error: %s", err)
-			case <-stop:
-				// Wait for a while
-				time.Sleep(30 * time.Second)
-				err := cmd.Process.Signal(syscall.SIGINT)
-				if err != nil {
-					log.Println(err)
-				}
+			done, err := watchEvents(tpl, cmd, stop)
+			if err != nil {
+				log.Println(err)
+			}
+			if done {
 				return
 			}
 		}
 	}()
 
+	return cmd.Wait()
+}
+
+func watchEvents(tpl *template.Template, cmd *exec.Cmd, stop chan os.Signal) (bool, error) {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		return false, err
+	}
+	defer watcher.Close()
+
 	err = watcher.Add(cfgPath)
 	if err != nil {
-		return err
+		return false, err
 	}
 
-	return cmd.Wait()
+	select {
+	case <-watcher.Events:
+		err := process(tpl, cmd)
+		if err != nil {
+			log.Printf("Failed to process config: %s", err)
+		}
+	case err := <-watcher.Errors:
+		log.Printf("Config watch error: %s", err)
+	case <-stop:
+		// Wait for a while
+		time.Sleep(30 * time.Second)
+		err := cmd.Process.Signal(syscall.SIGINT)
+		if err != nil {
+			log.Println(err)
+		}
+		return true, nil
+	}
+
+	return false, nil
 }
 
 type SiteConfig struct {
