@@ -2,9 +2,9 @@ package main
 
 import (
 	"bytes"
-	"html/template"
 	"strings"
 	"testing"
+	"text/template"
 
 	"github.com/cheekybits/is"
 )
@@ -16,6 +16,7 @@ const testCfg = `
     location / {
         rewrite ^/rss/(en|nl)$ /index.xml permanent;
         rewrite ^/feeds/.*\.rss$ /index.xml permanent;
+        rewrite "^/(20[0-9]{2})-((0|1)[0-9])/?$" /date/$1/$2 permanent;
     }
 - host: redirect.example.com
   redirect: other.example.com
@@ -42,6 +43,7 @@ func TestTemplate(t *testing.T) {
 	is.True(strings.Contains(s, "server_name test.example.com"))
 	is.True(strings.Contains(s, "root /data/sites/test.example.com"))
 	is.True(strings.Contains(s, "/index.xml"))
+	is.False(strings.Contains(s, "#34"))
 
 	is.True(strings.Contains(s, "server_name redirect.example.com"))
 	is.True(strings.Contains(s, "rewrite ^(.*)$ https://other.example.com$1 permanent"))

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"html/template"
 	"io"
 	"io/ioutil"
 	"log"
@@ -9,6 +8,7 @@ import (
 	"os/exec"
 	"os/signal"
 	"syscall"
+	"text/template"
 	"time"
 
 	yaml "gopkg.in/yaml.v1"
